@@ -45,16 +45,16 @@ CategoryType::create([
 ```
 
 ## Category Tree
-- Get category tree by using category type id
+- Get a category tree by using category type id
 ```php
 use BalajiDharma\LaravelCategory\Models\Category;
 
 $items = (new Category)->toTree($type->id);
 ```
 
-- Get category tree by using category machine name
+- Get a category tree by using the category machine name
 ```php
-use BalajiDharma\LaravelCategory\Models\Category;
+use BalajiDharma\LaravelCategory\Models\CategoryType;
 
-$items = Category::getCategoryTree('product_category');
+$items = CategoryType::getCategoryTree('product_category');
 ```
