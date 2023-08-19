@@ -37,9 +37,4 @@ class Category extends Model
     {
         $this->attributes['weight'] = $weight ?? 0;
     }
-
-    public function setIsEnabled($is_enabled) 
-    {
-        $this->attributes['is_enabled'] = $is_enabled ?? 1;
-    }
 }
