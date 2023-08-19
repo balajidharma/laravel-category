@@ -37,6 +37,11 @@ class CategoryType extends Model
         return static::query()->create($attributes);
     }
 
+    public function setIsFlatAttribute($is_flat) 
+    {
+        $this->attributes['is_flat'] = $is_flat ?? 0;
+    }
+
     public function categories(): HasMany
     {
         return $this->hasMany(config('category.models.category'));

@@ -2,8 +2,8 @@
 
 return [
     'models' => [
-        'category_type' => BalajiDharma\LaraveCategory\Models\CategoryType::class,
-        'category' => BalajiDharma\LaraveCategory\Models\Category::class,
+        'category_type' => BalajiDharma\LaravelCategory\Models\CategoryType::class,
+        'category' => BalajiDharma\LaravelCategory\Models\Category::class,
     ],
 
     'table_names' => [
