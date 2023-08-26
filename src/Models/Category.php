@@ -5,6 +5,7 @@ namespace BalajiDharma\LaravelCategory\Models;
 use BalajiDharma\LaravelCategory\Traits\CategoryTree;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Builder;
 
 class Category extends Model
 {
@@ -19,6 +20,11 @@ class Category extends Model
      */
     protected $guarded = [];
 
+    /**
+     * The attributes that should be cast.
+     *
+     * @var array
+     */
     protected $casts = [
         'enabled' => 'boolean',
     ];
@@ -36,5 +42,41 @@ class Category extends Model
     public function setWeightAttribute($weight)
     {
         $this->attributes['weight'] = $weight ?? 0;
+    }
+
+    public function setSlugAttribute($slug)
+    {
+        $slug = $slug ?? $this->name;
+        $slug = \Str::slug($slug);
+
+        if($this->id){
+            $similarSlugs = Category::where(function(Builder $q) use ($slug) {
+                $q->where('slug', '=', $slug)
+                    ->where('id', '!=', $this->id);
+            })->where(function(Builder $q) use ($slug) {
+                $q->where('id', '!=', $this->id)
+                    ->orWhereRaw("slug RLIKE '^{$slug}(-[0-9]+)?$'");
+            })->select('slug')->get();
+        } else {
+            $similarSlugs = Category::where(function(Builder $q) use ($slug) {
+                $q->where('slug', '=', $slug)
+                ->orWhereRaw("slug RLIKE '^{$slug}(-[0-9]+)?$'");
+            })->select('slug')->get();
+        }
+
+        if($similarSlugs->count()) {
+            $valid = 0;
+            $i = 1;
+            do {
+                $newSlug = $slug . '-' . $i;
+                if($similarSlugs->firstWhere('slug', $newSlug)) {
+                    $i++;
+                } else {
+                    $valid = 1;
+                    $slug = $newSlug;
+                }
+            } while ($valid < 1);
+        }
+        $this->attributes['slug'] = $slug;
     }
 }

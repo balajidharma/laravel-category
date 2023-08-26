@@ -17,6 +17,15 @@ class CategoryType extends Model
      */
     protected $guarded = [];
 
+    /**
+     * The attributes that should be cast.
+     *
+     * @var array
+     */
+    protected $casts = [
+        'is_flat' => 'boolean',
+    ];
+
     public function getTable()
     {
         return config('category.table_names.category_types', parent::getTable());

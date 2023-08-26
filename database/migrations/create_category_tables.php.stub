@@ -20,6 +20,7 @@ class CreateCategoryTables extends Migration
             $table->string('name');
             $table->string('description')->nullable();
             $table->string('machine_name', 64)->unique();
+            $table->boolean('is_flat')->default(0);
             $table->timestamps();
         });
 
@@ -38,7 +39,7 @@ class CreateCategoryTables extends Migration
             $table->string('description')->nullable();
             $table->unsignedBigInteger('parent_id')->nullable();
             $table->integer('weight')->default(0);
-            $table->boolean('enabled');
+            $table->boolean('enabled')->default(1);
             $table->timestamps();
         });
 
