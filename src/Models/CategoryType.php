@@ -55,11 +55,11 @@ class CategoryType extends Model
         return preg_match('/^[a-z0-9_-]+$/', $machine_name);
     }
 
-    protected static function getCategoryTree($machine_name) {
+    protected static function getCategoryTree($machine_name, $includeDisabledItems = false) {
         $categoryType = CategoryType::where('machine_name', $machine_name)->first();
         if(!$categoryType){
             throw CategoryTypeNotExists::create($machine_name);
         }
-        return (new Category)->toTree($categoryType->id);
+        return (new Category)->toTree($categoryType->id, $includeDisabledItems);
     }
 }
