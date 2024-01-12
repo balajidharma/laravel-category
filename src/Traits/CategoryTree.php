@@ -172,9 +172,9 @@ trait CategoryTree
      *
      * @return array
      */
-    public function toTree($menuId, $includeDisabledItems = false)
+    public function toTree($categoryTypeId, $includeDisabledItems = false)
     {
-        return $this->buildNestedArray($menuId, $includeDisabledItems);
+        return $this->buildNestedArray($categoryTypeId, $includeDisabledItems);
     }
 
     /**
@@ -185,17 +185,17 @@ trait CategoryTree
      *
      * @return array
      */
-    protected function buildNestedArray($menuId, $includeDisabledItems = false, array $nodes = [], $parentId = 0)
+    protected function buildNestedArray($categoryTypeId, $includeDisabledItems = false, array $nodes = [], $parentId = 0)
     {
         $branch = [];
 
         if (empty($nodes)) {
-            $nodes = $this->allNodes($menuId, null, $includeDisabledItems);
+            $nodes = $this->allNodes($categoryTypeId, null, $includeDisabledItems);
         }
 
         foreach ($nodes as $node) {
             if ($node[$this->getParentColumn()] == $parentId) {
-                $children = $this->buildNestedArray($menuId, $includeDisabledItems, $nodes, $node[$this->getKeyName()]);
+                $children = $this->buildNestedArray($categoryTypeId, $includeDisabledItems, $nodes, $node[$this->getKeyName()]);
 
                 if ($children) {
                     $node['children'] = $children;
@@ -213,7 +213,7 @@ trait CategoryTree
      *
      * @return mixed
      */
-    public function allNodes($menuId, $ignoreItemId = null, $includeDisabledItems = false)
+    public function allNodes($categoryTypeId, $ignoreItemId = null, $includeDisabledItems = false)
     {
         $self = new static();
 
@@ -223,17 +223,19 @@ trait CategoryTree
 
 
         if($ignoreItemId) {
-            return $self->where($this->getCategoryTypeRelationColumn(), $menuId)
+            return $self->where($this->getCategoryTypeRelationColumn(), $categoryTypeId)
                 ->where(function ($query) use ($ignoreItemId) {
-                    $query->where($this->getParentColumn(), '!=', $ignoreItemId)->orWhereNull($this->getParentColumn());
+                    $query->where($this->getParentColumn(), '!=', $ignoreItemId)
+                        ->orWhereNull($this->getParentColumn());
                 })
                 ->when(!$includeDisabledItems, function ($query) {
                     $query->where('enabled', true);
                 })
+                ->where('id', '!=', $ignoreItemId)
                 ->orderBy($this->getOrderColumn())->get()->toArray();
         }
 
-        return $self->where($this->getCategoryTypeRelationColumn(), $menuId)
+        return $self->where($this->getCategoryTypeRelationColumn(), $categoryTypeId)
             ->when(!$includeDisabledItems, function ($query) {
                 $query->where('enabled', true);
             })
@@ -248,9 +250,9 @@ trait CategoryTree
      *
      * @return array
      */
-    public static function selectOptions($menuId, $ignoreItemId = null, $includeDisabledItems = false, \Closure $closure = null)
+    public static function selectOptions($categoryTypeId, $ignoreItemId = null, $includeDisabledItems = false, \Closure $closure = null)
     {
-        $options = (new static())->withQuery($closure)->buildSelectOptions($menuId, $ignoreItemId, $includeDisabledItems);
+        $options = (new static())->withQuery($closure)->buildSelectOptions($categoryTypeId, $ignoreItemId, $includeDisabledItems);
 
         return collect($options)->all();
     }
@@ -265,14 +267,14 @@ trait CategoryTree
      *
      * @return array
      */
-    protected function buildSelectOptions($menuId, $ignoreItemId, $includeDisabledItems = false, array $nodes = [], $parentId = 0, $prefix = '', $space = '&nbsp;')
+    protected function buildSelectOptions($categoryTypeId, $ignoreItemId, $includeDisabledItems = false, array $nodes = [], $parentId = 0, $prefix = '', $space = '&nbsp;')
     {
         $prefix = $prefix ?: '┝'.$space;
 
         $options = [];
 
         if (empty($nodes)) {
-            $nodes = $this->allNodes($menuId, $ignoreItemId, $includeDisabledItems);
+            $nodes = $this->allNodes($categoryTypeId, $ignoreItemId, $includeDisabledItems);
         }
 
         foreach ($nodes as $index => $node) {
@@ -281,7 +283,7 @@ trait CategoryTree
 
                 $childrenPrefix = str_replace('┝', str_repeat($space, 6), $prefix).'┝'.str_replace(['┝', $space], '', $prefix);
 
-                $children = $this->buildSelectOptions($menuId, null, $includeDisabledItems, $nodes, $node[$this->getKeyName()], $childrenPrefix);
+                $children = $this->buildSelectOptions($categoryTypeId, null, $includeDisabledItems, $nodes, $node[$this->getKeyName()], $childrenPrefix);
 
                 $options[$node[$this->getKeyName()]] = $node[$this->getTitleColumn()];
 
