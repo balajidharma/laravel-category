@@ -5,6 +5,7 @@ namespace BalajiDharma\LaravelCategory;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Collection;
 use Illuminate\Support\ServiceProvider;
+
 class CategoryServiceProvider extends ServiceProvider
 {
     /**
@@ -19,7 +20,7 @@ class CategoryServiceProvider extends ServiceProvider
         );
     }
 
-     /**
+    /**
      * Bootstrap the application events.
      *
      * @return void
@@ -39,8 +40,6 @@ class CategoryServiceProvider extends ServiceProvider
 
     /**
      * Returns existing migration file if found, else uses the current timestamp.
-     *
-     * @return string
      */
     protected function getMigrationFileName($migrationFileName): string
     {
@@ -55,5 +54,4 @@ class CategoryServiceProvider extends ServiceProvider
             ->push($this->app->databasePath()."/migrations/{$timestamp}_{$migrationFileName}")
             ->first();
     }
-
 }

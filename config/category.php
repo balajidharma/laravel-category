@@ -10,5 +10,5 @@ return [
         'category_types' => 'category_types',
         'categories' => 'categories',
         'model_has_categories' => 'model_has_categories',
-    ]
+    ],
 ];

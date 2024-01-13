@@ -8,7 +8,6 @@ use Illuminate\Support\Facades\Request;
 
 trait CategoryTree
 {
-
     /**
      * @var \Closure
      */
@@ -45,7 +44,7 @@ trait CategoryTree
 
         $parent = $this->parent;
 
-        while (!is_null($parent)) {
+        while (! is_null($parent)) {
             $parents->push($parent);
             $parent = $parent->parent;
         }
@@ -76,7 +75,7 @@ trait CategoryTree
     /**
      * Set parent column.
      *
-     * @param string $column
+     * @param  string  $column
      */
     public function setParentColumn($column)
     {
@@ -100,7 +99,7 @@ trait CategoryTree
     /**
      * Set title column.
      *
-     * @param string $column
+     * @param  string  $column
      */
     public function setTitleColumn($column)
     {
@@ -124,14 +123,14 @@ trait CategoryTree
     /**
      * Set order column.
      *
-     * @param string $column
+     * @param  string  $column
      */
     public function setOrderColumn($column)
     {
         $this->orderColumn = $column;
     }
 
-     /**
+    /**
      * @return string
      */
     public function getCategoryTypeRelationColumn()
@@ -146,7 +145,7 @@ trait CategoryTree
     /**
      * Set menu relation column.
      *
-     * @param string $column
+     * @param  string  $column
      */
     public function setCategoryTypeRelationColumn($column)
     {
@@ -156,11 +155,10 @@ trait CategoryTree
     /**
      * Set query callback to model.
      *
-     * @param \Closure|null $query
      *
      * @return $this
      */
-    public function withQuery(\Closure $query = null)
+    public function withQuery(?\Closure $query = null)
     {
         $this->queryCallback = $query;
 
@@ -180,9 +178,7 @@ trait CategoryTree
     /**
      * Build Nested array.
      *
-     * @param array $nodes
-     * @param int   $parentId
-     *
+     * @param  int  $parentId
      * @return array
      */
     protected function buildNestedArray($categoryTypeId, $includeDisabledItems = false, array $nodes = [], $parentId = 0)
@@ -221,14 +217,13 @@ trait CategoryTree
             $self = call_user_func($this->queryCallback, $self);
         }
 
-
-        if($ignoreItemId) {
+        if ($ignoreItemId) {
             return $self->where($this->getCategoryTypeRelationColumn(), $categoryTypeId)
                 ->where(function ($query) use ($ignoreItemId) {
                     $query->where($this->getParentColumn(), '!=', $ignoreItemId)
                         ->orWhereNull($this->getParentColumn());
                 })
-                ->when(!$includeDisabledItems, function ($query) {
+                ->when(! $includeDisabledItems, function ($query) {
                     $query->where('enabled', true);
                 })
                 ->where('id', '!=', $ignoreItemId)
@@ -236,7 +231,7 @@ trait CategoryTree
         }
 
         return $self->where($this->getCategoryTypeRelationColumn(), $categoryTypeId)
-            ->when(!$includeDisabledItems, function ($query) {
+            ->when(! $includeDisabledItems, function ($query) {
                 $query->where('enabled', true);
             })
             ->orderBy($this->getOrderColumn())->get()->toArray();
@@ -245,12 +240,10 @@ trait CategoryTree
     /**
      * Get options for Select field in form.
      *
-     * @param \Closure|null $closure
-     * @param string        $rootText
-     *
+     * @param  string  $rootText
      * @return array
      */
-    public static function selectOptions($categoryTypeId, $ignoreItemId = null, $includeDisabledItems = false, \Closure $closure = null)
+    public static function selectOptions($categoryTypeId, $ignoreItemId = null, $includeDisabledItems = false, ?\Closure $closure = null)
     {
         $options = (new static())->withQuery($closure)->buildSelectOptions($categoryTypeId, $ignoreItemId, $includeDisabledItems);
 
@@ -260,11 +253,9 @@ trait CategoryTree
     /**
      * Build options of select field in form.
      *
-     * @param array  $nodes
-     * @param int    $parentId
-     * @param string $prefix
-     * @param string $space
-     *
+     * @param  int  $parentId
+     * @param  string  $prefix
+     * @param  string  $space
      * @return array
      */
     protected function buildSelectOptions($categoryTypeId, $ignoreItemId, $includeDisabledItems = false, array $nodes = [], $parentId = 0, $prefix = '', $space = '&nbsp;')

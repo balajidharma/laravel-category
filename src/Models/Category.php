@@ -3,9 +3,9 @@
 namespace BalajiDharma\LaravelCategory\Models;
 
 use BalajiDharma\LaravelCategory\Traits\CategoryTree;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Builder;
 
 class Category extends Model
 {
@@ -13,7 +13,7 @@ class Category extends Model
         CategoryTree::boot as treeBoot;
     }
 
-     /**
+    /**
      * The attributes that aren't mass assignable.
      *
      * @var array
@@ -49,27 +49,27 @@ class Category extends Model
         $slug = $slug ?? $this->name;
         $slug = \Str::slug($slug);
 
-        if($this->id){
-            $similarSlugs = Category::where(function(Builder $q) use ($slug) {
+        if ($this->id) {
+            $similarSlugs = Category::where(function (Builder $q) use ($slug) {
                 $q->where('slug', '=', $slug)
                     ->where('id', '!=', $this->id);
-            })->where(function(Builder $q) use ($slug) {
+            })->where(function (Builder $q) use ($slug) {
                 $q->where('id', '!=', $this->id)
                     ->orWhereRaw("slug RLIKE '^{$slug}(-[0-9]+)?$'");
             })->select('slug')->get();
         } else {
-            $similarSlugs = Category::where(function(Builder $q) use ($slug) {
+            $similarSlugs = Category::where(function (Builder $q) use ($slug) {
                 $q->where('slug', '=', $slug)
-                ->orWhereRaw("slug RLIKE '^{$slug}(-[0-9]+)?$'");
+                    ->orWhereRaw("slug RLIKE '^{$slug}(-[0-9]+)?$'");
             })->select('slug')->get();
         }
 
-        if($similarSlugs->count()) {
+        if ($similarSlugs->count()) {
             $valid = 0;
             $i = 1;
             do {
-                $newSlug = $slug . '-' . $i;
-                if($similarSlugs->firstWhere('slug', $newSlug)) {
+                $newSlug = $slug.'-'.$i;
+                if ($similarSlugs->firstWhere('slug', $newSlug)) {
                     $i++;
                 } else {
                     $valid = 1;
