@@ -30,11 +30,11 @@ class CategoryServiceProvider extends ServiceProvider
         if (app()->runningInConsole()) {
             $this->publishes([
                 __DIR__.'/../config/category.php' => config_path('category.php'),
-            ], 'config');
+            ], ['config', 'category-config','admin-core', 'admin-core-config']);
 
             $this->publishes([
                 __DIR__.'/../database/migrations/create_category_tables.php.stub' => $this->getMigrationFileName('create_category_tables.php'),
-            ], 'migrations');
+            ], ['migrations', 'category-migrations', 'admin-core', 'admin-core-migrations']);
         }
     }
 
