@@ -226,7 +226,6 @@ trait CategoryTree
                 ->when(! $includeDisabledItems, function ($query) {
                     $query->where('enabled', true);
                 })
-                ->where('id', '!=', $ignoreItemId)
                 ->orderBy($this->getOrderColumn())->get()->toArray();
         }
 
