@@ -168,38 +168,41 @@ trait CategoryTree
     /**
      * Format data to tree like array.
      *
-     * @return array
+     * @return \Illuminate\Support\Collection
      */
     public function toTree($categoryTypeId, $includeDisabledItems = false)
     {
-        return $this->buildNestedArray($categoryTypeId, $includeDisabledItems);
+        return $this->buildNestedItems($categoryTypeId, $includeDisabledItems);
     }
 
     /**
      * Build Nested array.
      *
      * @param  int  $parentId
-     * @return array
+     * @return \Illuminate\Support\Collection
      */
-    protected function buildNestedArray($categoryTypeId, $includeDisabledItems = false, array $nodes = [], $parentId = 0)
+    protected function buildNestedItems($categoryTypeId, $includeDisabledItems = false, $nodes = null, $parentId = 0)
     {
-        $branch = [];
+        $branch = collect();
 
         if (empty($nodes)) {
             $nodes = $this->allNodes($categoryTypeId, null, $includeDisabledItems);
         }
 
-        foreach ($nodes as $node) {
-            if ($node[$this->getParentColumn()] == $parentId) {
-                $children = $this->buildNestedArray($categoryTypeId, $includeDisabledItems, $nodes, $node[$this->getKeyName()]);
+        $nodes->each(function ($node) use ($categoryTypeId, $nodes, $includeDisabledItems, $parentId, &$branch) {
+            $parentColumn = $this->getParentColumn();
+            $keyName = $this->getKeyName();
+
+            if ($parentId == $node->$parentColumn) {
+                $children = $this->buildNestedItems($categoryTypeId, $includeDisabledItems, $nodes, $node->$keyName);
 
                 if ($children) {
-                    $node['children'] = $children;
+                    $node->children = $children;
                 }
 
-                $branch[] = $node;
+                $branch->push($node);
             }
-        }
+        });
 
         return $branch;
     }
@@ -226,14 +229,14 @@ trait CategoryTree
                 ->when(! $includeDisabledItems, function ($query) {
                     $query->where('enabled', true);
                 })
-                ->orderBy($this->getOrderColumn())->get()->toArray();
+                ->orderBy($this->getOrderColumn())->get();
         }
 
         return $self->where($this->getCategoryTypeRelationColumn(), $categoryTypeId)
             ->when(! $includeDisabledItems, function ($query) {
                 $query->where('enabled', true);
             })
-            ->orderBy($this->getOrderColumn())->get()->toArray();
+            ->orderBy($this->getOrderColumn())->get();
     }
 
     /**
@@ -267,21 +270,25 @@ trait CategoryTree
             $nodes = $this->allNodes($categoryTypeId, $ignoreItemId, $includeDisabledItems);
         }
 
-        foreach ($nodes as $index => $node) {
-            if ($node[$this->getParentColumn()] == $parentId) {
-                $node[$this->getTitleColumn()] = $prefix.$space.$node[$this->getTitleColumn()];
+        $nodes->each(function ($node) use ($menuId, $nodes, $includeDisabledItems, $parentId, $prefix, $space, &$options) {
+            $parentColumn = $this->getParentColumn();
+            $keyName = $this->getKeyName();
+            $titleColumn = $this->getTitleColumn();
+
+            if ($parentId == $node->$parentColumn) {
+                $node->$titleColumn = $prefix.$space.$node->$titleColumn;
 
                 $childrenPrefix = str_replace('┝', str_repeat($space, 6), $prefix).'┝'.str_replace(['┝', $space], '', $prefix);
 
                 $children = $this->buildSelectOptions($categoryTypeId, null, $includeDisabledItems, $nodes, $node[$this->getKeyName()], $childrenPrefix);
 
-                $options[$node[$this->getKeyName()]] = $node[$this->getTitleColumn()];
+                $options[$node->$keyName] = $node->$titleColumn;
 
                 if ($children) {
                     $options += $children;
                 }
             }
-        }
+        });
 
         return $options;
     }
