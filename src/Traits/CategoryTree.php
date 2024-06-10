@@ -3,6 +3,7 @@
 namespace BalajiDharma\LaravelCategory\Traits;
 
 use BalajiDharma\LaravelCategory\Exceptions\InvalidParent;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Request;
 
@@ -260,7 +261,7 @@ trait CategoryTree
      * @param  string  $space
      * @return array
      */
-    protected function buildSelectOptions($categoryTypeId, $ignoreItemId, $includeDisabledItems = false, array $nodes = [], $parentId = 0, $prefix = '', $space = '&nbsp;')
+    protected function buildSelectOptions($categoryTypeId, $ignoreItemId, $includeDisabledItems = false, ?Collection $nodes = null, $parentId = 0, $prefix = '', $space = '&nbsp;')
     {
         $prefix = $prefix ?: '┝'.$space;
 
@@ -270,7 +271,7 @@ trait CategoryTree
             $nodes = $this->allNodes($categoryTypeId, $ignoreItemId, $includeDisabledItems);
         }
 
-        $nodes->each(function ($node) use ($menuId, $nodes, $includeDisabledItems, $parentId, $prefix, $space, &$options) {
+        $nodes->each(function ($node) use ($categoryTypeId, $nodes, $includeDisabledItems, $parentId, $prefix, $space, &$options) {
             $parentColumn = $this->getParentColumn();
             $keyName = $this->getKeyName();
             $titleColumn = $this->getTitleColumn();
