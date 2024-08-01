@@ -215,7 +215,7 @@ trait CategoryTree
      */
     public function allNodes($categoryTypeId, $ignoreItemId = null, $includeDisabledItems = false)
     {
-        $self = new static();
+        $self = new static;
 
         if ($this->queryCallback instanceof \Closure) {
             $self = call_user_func($this->queryCallback, $self);
@@ -248,7 +248,7 @@ trait CategoryTree
      */
     public static function selectOptions($categoryTypeId, $ignoreItemId = null, $includeDisabledItems = false, ?\Closure $closure = null)
     {
-        $options = (new static())->withQuery($closure)->buildSelectOptions($categoryTypeId, $ignoreItemId, $includeDisabledItems);
+        $options = (new static)->withQuery($closure)->buildSelectOptions($categoryTypeId, $ignoreItemId, $includeDisabledItems);
 
         return collect($options)->all();
     }
