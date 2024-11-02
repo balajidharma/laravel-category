@@ -50,7 +50,7 @@ class CreateCategoryTables extends Migration
                 ->on($tableNames['categories'])
                 ->onDelete('cascade');
 
-            $table->nullableMorphs('category_item');
+            $table->morphs('model');
         });
     }
 
