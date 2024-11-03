@@ -14,6 +14,7 @@ class CreateCategoryTables extends Migration
     public function up()
     {
         $tableNames = config('category.table_names');
+        $columnNames = config('category.column_names');
 
         Schema::create($tableNames['category_types'], function (Blueprint $table) {
             $table->bigIncrements('id');
@@ -43,7 +44,7 @@ class CreateCategoryTables extends Migration
             $table->timestamps();
         });
 
-        Schema::create($tableNames['model_has_categories'], function (Blueprint $table) use ($tableNames) {
+        Schema::create($tableNames['model_has_categories'], function (Blueprint $table) use ($tableNames, $columnNames) {
             $table->unsignedBigInteger('category_id');
             $table->foreign('category_id')
                 ->references('id')
@@ -51,6 +52,8 @@ class CreateCategoryTables extends Migration
                 ->onDelete('cascade');
 
             $table->morphs('model');
+
+            $table->primary(['category_id', $columnNames['model_morph_key'], 'model_type']);
         });
     }
 
