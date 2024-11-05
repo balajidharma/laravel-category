@@ -52,6 +52,7 @@ class CreateCategoryTables extends Migration
                 ->onDelete('cascade');
 
             $table->morphs('model');
+            $table->integer('weight')->default(0);
 
             $table->primary(['category_id', $columnNames['model_morph_key'], 'model_type']);
         });

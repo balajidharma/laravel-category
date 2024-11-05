@@ -10,6 +10,19 @@ use Illuminate\Support\Facades\Request;
 trait CategoryTree
 {
     /**
+     * {@inheritdoc}
+     */
+    protected static function bootCategoryTree()
+    {
+        static::saving(function (Model $branch) {
+            $parentColumn = $branch->getParentColumn();
+            if (Request::filled($parentColumn) && Request::input($parentColumn) == $branch->getKey()) {
+                throw InvalidParent::create();
+            }
+        });
+    }
+
+    /**
      * @var \Closure
      */
     protected $queryCallback;
@@ -304,23 +317,5 @@ trait CategoryTree
         $this->where($this->getParentColumn(), $this->getKey())->update([$this->getParentColumn() => $newParent]);
 
         return parent::delete();
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected static function boot()
-    {
-        parent::boot();
-
-        static::saving(function (Model $branch) {
-            $parentColumn = $branch->getParentColumn();
-
-            if (Request::filled($parentColumn) && Request::input($parentColumn) == $branch->getKey()) {
-                throw InvalidParent::create();
-            }
-
-            return $branch;
-        });
     }
 }
