@@ -12,14 +12,14 @@ trait HasCategories
     /**
      * @return mixed
      */
-    public function categories(): MorphToMany
+    public function modelCategories(): MorphToMany
     {
         return $this->morphToMany(
             config('category.models.category'),
             'model',
             config('category.table_names.model_has_categories'),
             config('category.column_names.model_morph_key')
-        );
+        )->orderBy(config('category.table_names.model_has_categories').'.weight', 'asc');
     }
 
     public static function getCategoryClassName(): string
@@ -29,15 +29,14 @@ trait HasCategories
 
     public function getCategoriesByType($type)
     {
-        return $this->categories()->whereRelation('categoryType', function ($query) use ($type) {
+        return $this->modelCategories()->whereRelation('categoryType', function ($query) use ($type) {
             if (is_array($type)) {
                 return $query->whereIn('machine_name', $type);
             } elseif (is_string($type)) {
                 return $query->where('machine_name', $type);
             }
         })
-            ->where('enabled', true)
-            ->orderBy(config('category.table_names.model_has_categories').'.weight', 'asc');
+            ->where('enabled', true);
     }
 
     public function attachCategories(array|ArrayAccess|Category $categories, string $type): static
@@ -51,7 +50,7 @@ trait HasCategories
             $weight++;
         }
 
-        $this->categories()->sync($syncData);
+        $this->modelCategories()->sync($syncData);
 
         return $this;
     }
