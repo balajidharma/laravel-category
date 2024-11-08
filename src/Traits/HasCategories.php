@@ -42,6 +42,7 @@ trait HasCategories
     public function attachCategories(array|ArrayAccess|Category $categories, string $type): static
     {
         $className = static::getCategoryClassName();
+        $categories = array_filter($categories);
         $categories = collect($className::findOrCreate($categories, $type));
         $syncData = [];
         $weight = 1;
