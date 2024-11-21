@@ -40,6 +40,8 @@ class CreateCategoryTables extends Migration
             $table->string('description')->nullable();
             $table->unsignedBigInteger('parent_id')->nullable();
             $table->integer('weight')->default(0);
+            $table->text('icon')->nullable();
+            $table->string('color', 50)->nullable();
             $table->boolean('enabled')->default(1);
             $table->timestamps();
         });
