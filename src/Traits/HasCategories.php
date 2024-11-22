@@ -6,6 +6,7 @@ use ArrayAccess;
 use BalajiDharma\LaravelCategory\Models\Category;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Support\Arr;
+use InvalidArgumentException;
 
 trait HasCategories
 {
@@ -39,56 +40,92 @@ trait HasCategories
             ->where('enabled', true);
     }
 
-    public function attachCategories(array|ArrayAccess|Category $categories, string $type): static
+    public function attachTags(array|ArrayAccess|Category $categories, string $type): static
     {
         $className = static::getCategoryClassName();
         $categories = array_filter($categories);
+        $categoryType = $className::findCategoryType($type);
         $categories = collect($className::findOrCreate($categories, $type));
         $syncData = [];
         $weight = 1;
         foreach ($categories as $category) {
-            $syncData[$category->id] = ['weight' => $weight];
+            $syncData[$category->id] = ['weight' => $weight, 'category_type_id' => $categoryType->id];
             $weight++;
         }
 
-        $this->modelCategories()->sync($syncData);
+        $this->modelCategories()->wherePivot('category_type_id', $categoryType->id)->syncWithoutDetaching($syncData);
 
         return $this;
     }
 
-    public function attachCategory(string|Category $category, ?string $type = null)
+    public function attachTag(string|Category $category, string $type)
     {
-        return $this->attachCategories([$category], $type);
+        return $this->attachTags([$category], $type);
     }
 
-    public function detachCategories(array|ArrayAccess $categories, ?string $type = null): static
+    public function detachTags(array|ArrayAccess $categories, $type): static
     {
-        $categories = static::convertToCategories($categories, $type);
+        $categories = static::convertToTags($categories, $type);
 
         collect($categories)
             ->filter()
-            ->each(fn (Category $category) => $this->tags()->detach($category));
+            ->each(fn (Category $category) => $this->modelCategories()->detach($category));
 
         return $this;
     }
 
-    public function detachCategory(string|Category $category, ?string $type = null): static
+    public function detachTag(string|Category $category, $type): static
     {
-        return $this->detachCategorys([$category], $type);
+        return $this->detachTags([$category], $type);
     }
 
-    public function syncCategories(string|array|ArrayAccess $categories): static
+    public function syncTags(array|ArrayAccess|Category $categories, string $type): static
     {
-        if (is_string($categories)) {
-            $categories = Arr::wrap($categories);
+        $className = static::getCategoryClassName();
+        $categories = array_filter($categories);
+        $categoryType = $className::findCategoryType($type);
+        $categories = collect($className::findOrCreate($categories, $type));
+        $syncData = [];
+        $weight = 1;
+        foreach ($categories as $category) {
+            $syncData[$category->id] = ['weight' => $weight, 'category_type_id' => $categoryType->id];
+            $weight++;
         }
 
-        $className = static::getCategoryClassName();
-
-        $categories = collect($className::findOrCreate($categories));
-
-        $this->tags()->sync($categories->pluck('id')->toArray());
+        $this->modelCategories()->wherePivot('category_type_id', $categoryType->id)->sync($syncData);
 
         return $this;
+    }
+
+    public function syncCategories(array $ids, string $type): static
+    {
+        $className = static::getCategoryClassName();
+        $categoryType = $className::findCategoryType($type);
+
+        $syncData = [];
+        $weight = 1;
+        foreach ($ids as $id) {
+            $syncData[$id] = ['weight' => $weight, 'category_type_id' => $categoryType->id];
+            $weight++;
+        }
+        $this->modelCategories()->wherePivot('category_type_id', $categoryType->id)->sync($syncData);
+        return $this;
+    }
+
+    protected static function convertToTags($values, $type)
+    {
+        if ($values instanceof Category) {
+            $values = [$values];
+        }
+
+        return collect($values)->map(function ($value) use ($type) {
+            if ($value instanceof Category) {
+                return $value;
+            }
+
+            $className = static::getCategoryClassName();
+
+            return $className::findFromString($value, $type);
+        });
     }
 }
