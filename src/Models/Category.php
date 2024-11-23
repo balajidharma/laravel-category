@@ -68,14 +68,17 @@ class Category extends Model
         if ($this->id) {
             $similarSlugs = Category::where(function (Builder $q) use ($slug) {
                 $q->where('slug', '=', $slug)
+                    ->where('category_type_id', $this->category_type_id)
                     ->where('id', '!=', $this->id);
             })->where(function (Builder $q) use ($slug) {
                 $q->where('id', '!=', $this->id)
+                    ->where('category_type_id', '!=', $this->category_type_id)
                     ->orWhereRaw("slug RLIKE '^{$slug}(-[0-9]+)?$'");
             })->select('slug')->get();
         } else {
             $similarSlugs = Category::where(function (Builder $q) use ($slug) {
                 $q->where('slug', '=', $slug)
+                    ->where('category_type_id', $this->category_type_id)
                     ->orWhereRaw("slug RLIKE '^{$slug}(-[0-9]+)?$'");
             })->select('slug')->get();
         }
