@@ -9,6 +9,7 @@ use BalajiDharma\LaravelCategory\Traits\HasCategories;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\DB;
 
 class Category extends Model
 {
@@ -65,21 +66,30 @@ class Category extends Model
         $slug = $this->slug ?? $this->name;
         $slug = \Str::slug($slug);
 
+        $regexOperators = [
+            'mysql' => 'RLIKE',
+            'pgsql' => '~',
+            'sqlite' => 'REGEXP'
+        ];
+
+        $driver = DB::connection()->getDriverName();
+        $regexOperator = $regexOperators[$driver] ?? 'mysql';
+
         if ($this->id) {
             $similarSlugs = Category::where(function (Builder $q) use ($slug) {
                 $q->where('slug', '=', $slug)
                     ->where('category_type_id', $this->category_type_id)
                     ->where('id', '!=', $this->id);
-            })->where(function (Builder $q) use ($slug) {
+            })->where(function (Builder $q) use ($slug, $regexOperator) {
                 $q->where('id', '!=', $this->id)
                     ->where('category_type_id', '!=', $this->category_type_id)
-                    ->orWhereRaw("slug RLIKE '^{$slug}(-[0-9]+)?$'");
+                    ->orWhereRaw("slug {$regexOperator} '^{$slug}(-[0-9]+)?$'");
             })->select('slug')->get();
         } else {
-            $similarSlugs = Category::where(function (Builder $q) use ($slug) {
+            $similarSlugs = Category::where(function (Builder $q) use ($slug, $regexOperator) {
                 $q->where('slug', '=', $slug)
                     ->where('category_type_id', $this->category_type_id)
-                    ->orWhereRaw("slug RLIKE '^{$slug}(-[0-9]+)?$'");
+                    ->orWhereRaw("slug {$regexOperator} '^{$slug}(-[0-9]+)?$'");
             })->select('slug')->get();
         }
 
