@@ -10,10 +10,12 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\DB;
+use Plank\Mediable\Mediable;
+use Plank\Mediable\MediableInterface;
 
-class Category extends Model
+class Category extends Model implements MediableInterface
 {
-    use CategoryTree, HasCategories;
+    use CategoryTree, HasCategories, Mediable;
 
     /**
      * The attributes that aren't mass assignable.
@@ -69,7 +71,7 @@ class Category extends Model
         $regexOperators = [
             'mysql' => 'RLIKE',
             'pgsql' => '~',
-            'sqlite' => 'REGEXP'
+            'sqlite' => 'REGEXP',
         ];
 
         $driver = DB::connection()->getDriverName();

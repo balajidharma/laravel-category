@@ -5,8 +5,6 @@ namespace BalajiDharma\LaravelCategory\Traits;
 use ArrayAccess;
 use BalajiDharma\LaravelCategory\Models\Category;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
-use Illuminate\Support\Arr;
-use InvalidArgumentException;
 
 trait HasCategories
 {
@@ -109,6 +107,7 @@ trait HasCategories
             $weight++;
         }
         $this->modelCategories()->wherePivot('category_type_id', $categoryType->id)->sync($syncData);
+
         return $this;
     }
 

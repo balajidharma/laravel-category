@@ -55,6 +55,7 @@ class CreateCategoryTables extends Migration
 
             $table->morphs('model');
             $table->integer('weight')->default(0);
+            $table->boolean('is_default')->default(0);
             $table->unsignedBigInteger('category_type_id');
 
             $table->primary(['category_id', $columnNames['model_morph_key'], 'model_type']);
