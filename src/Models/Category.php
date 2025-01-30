@@ -6,16 +6,15 @@ use ArrayAccess;
 use BalajiDharma\LaravelCategory\Exceptions\CategoryTypeNotExists;
 use BalajiDharma\LaravelCategory\Traits\CategoryTree;
 use BalajiDharma\LaravelCategory\Traits\HasCategories;
+use BalajiDharma\LaravelCategory\Traits\LaravelMediable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\DB;
-use Plank\Mediable\Mediable;
-use Plank\Mediable\MediableInterface;
 
-class Category extends Model implements MediableInterface
+class Category extends Model
 {
-    use CategoryTree, HasCategories, Mediable;
+    use CategoryTree, HasCategories, LaravelMediable;
 
     /**
      * The attributes that aren't mass assignable.
