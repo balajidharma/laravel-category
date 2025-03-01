@@ -28,7 +28,9 @@ trait HasCategories
 
     public function getCategoriesByType($type)
     {
-        return $this->modelCategories()->whereRelation('categoryType', function ($query) use ($type) {
+        return $this->modelCategories()
+                ->withPivot(['weight', 'is_default'])
+                ->whereRelation('categoryType', function ($query) use ($type) {
             if (is_array($type)) {
                 return $query->whereIn('machine_name', $type);
             } elseif (is_string($type)) {
@@ -95,18 +97,27 @@ trait HasCategories
         return $this;
     }
 
-    public function syncCategories(array $ids, string $type): static
+    public function syncCategories(array $options, string $type): static
     {
         $className = static::getCategoryClassName();
         $categoryType = $className::findCategoryType($type);
-
         $syncData = [];
         $weight = 1;
-        foreach ($ids as $id) {
-            $syncData[$id] = ['weight' => $weight, 'category_type_id' => $categoryType->id];
+
+        foreach ($options as $option) {
+            $id = is_array($option) ? $option['id'] : $option;
+            $isDefault = $option['is_default'] ?? false;
+            $syncData[$id] = [
+                'weight' => is_array($option) && isset($option['weight']) ? $option['weight'] : $weight,
+                'category_type_id' => $categoryType->id,
+                'is_default' => $isDefault
+            ];
             $weight++;
         }
-        $this->modelCategories()->wherePivot('category_type_id', $categoryType->id)->sync($syncData);
+
+        $this->modelCategories()
+             ->wherePivot('category_type_id', $categoryType->id)
+             ->sync($syncData);
 
         return $this;
     }
