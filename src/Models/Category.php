@@ -6,6 +6,7 @@ use ArrayAccess;
 use BalajiDharma\LaravelCategory\Exceptions\CategoryTypeNotExists;
 use BalajiDharma\LaravelCategory\Traits\CategoryTree;
 use BalajiDharma\LaravelCategory\Traits\HasCategories;
+use BalajiDharma\LaravelCategory\Traits\HasLogsActivity;
 use BalajiDharma\LaravelCategory\Traits\LaravelMediable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -14,7 +15,7 @@ use Illuminate\Support\Facades\DB;
 
 class Category extends Model
 {
-    use CategoryTree, HasCategories, LaravelMediable;
+    use CategoryTree, HasCategories, LaravelMediable, HasLogsActivity;
 
     /**
      * The attributes that aren't mass assignable.
