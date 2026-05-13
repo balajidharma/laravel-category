@@ -10,8 +10,8 @@
         }
     ],
     "require": {
-        "illuminate/support": "^10.0|^11.0|^12.0",
-        "balajidharma/laravel-media-manager":"^1.0"
+        "illuminate/support": "^12.0|^13.0",
+        "balajidharma/laravel-media-manager":"^2.0"
     },
     "autoload": {
         "psr-4": {
