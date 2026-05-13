@@ -3,11 +3,25 @@
 namespace BalajiDharma\LaravelCategory\Traits;
 
 use BalajiDharma\LaravelCategory\Exceptions\InvalidParent;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Request;
 
 trait CategoryTree
 {
+    /**
+     * {@inheritdoc}
+     */
+    protected static function bootCategoryTree()
+    {
+        static::saving(function (Model $branch) {
+            $parentColumn = $branch->getParentColumn();
+            if (Request::filled($parentColumn) && Request::input($parentColumn) == $branch->getKey()) {
+                throw InvalidParent::create();
+            }
+        });
+    }
+
     /**
      * @var \Closure
      */
@@ -214,7 +228,7 @@ trait CategoryTree
      */
     public function allNodes($categoryTypeId, $ignoreItemId = null, $includeDisabledItems = false)
     {
-        $self = new static();
+        $self = new static;
 
         if ($this->queryCallback instanceof \Closure) {
             $self = call_user_func($this->queryCallback, $self);
@@ -247,7 +261,7 @@ trait CategoryTree
      */
     public static function selectOptions($categoryTypeId, $ignoreItemId = null, $includeDisabledItems = false, ?\Closure $closure = null)
     {
-        $options = (new static())->withQuery($closure)->buildSelectOptions($categoryTypeId, $ignoreItemId, $includeDisabledItems);
+        $options = (new static)->withQuery($closure)->buildSelectOptions($categoryTypeId, $ignoreItemId, $includeDisabledItems);
 
         return collect($options)->all();
     }
@@ -260,7 +274,7 @@ trait CategoryTree
      * @param  string  $space
      * @return array
      */
-    protected function buildSelectOptions($categoryTypeId, $ignoreItemId, $includeDisabledItems = false, array $nodes = [], $parentId = 0, $prefix = '', $space = '&nbsp;')
+    protected function buildSelectOptions($categoryTypeId, $ignoreItemId, $includeDisabledItems = false, ?Collection $nodes = null, $parentId = 0, $prefix = '', $space = '&nbsp;')
     {
         $prefix = $prefix ?: '┝'.$space;
 
@@ -270,7 +284,7 @@ trait CategoryTree
             $nodes = $this->allNodes($categoryTypeId, $ignoreItemId, $includeDisabledItems);
         }
 
-        $nodes->each(function ($node) use ($menuId, $nodes, $includeDisabledItems, $parentId, $prefix, $space, &$options) {
+        $nodes->each(function ($node) use ($categoryTypeId, $nodes, $includeDisabledItems, $parentId, $prefix, $space, &$options) {
             $parentColumn = $this->getParentColumn();
             $keyName = $this->getKeyName();
             $titleColumn = $this->getTitleColumn();
@@ -303,23 +317,5 @@ trait CategoryTree
         $this->where($this->getParentColumn(), $this->getKey())->update([$this->getParentColumn() => $newParent]);
 
         return parent::delete();
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected static function boot()
-    {
-        parent::boot();
-
-        static::saving(function (Model $branch) {
-            $parentColumn = $branch->getParentColumn();
-
-            if (Request::filled($parentColumn) && Request::input($parentColumn) == $branch->getKey()) {
-                throw InvalidParent::create();
-            }
-
-            return $branch;
-        });
     }
 }

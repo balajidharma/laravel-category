@@ -5,11 +5,15 @@ namespace BalajiDharma\LaravelCategory\Models;
 use BalajiDharma\LaravelCategory\Exceptions\CategoryTypeAlreadyExists;
 use BalajiDharma\LaravelCategory\Exceptions\CategoryTypeNotExists;
 use BalajiDharma\LaravelCategory\Exceptions\MachineNameInvalidArgument;
+use BalajiDharma\LaravelCategory\Traits\HasCategories;
+use BalajiDharma\LaravelCategory\Traits\HasLogsActivity;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class CategoryType extends Model
 {
+    use HasCategories, HasLogsActivity;
+
     /**
      * The attributes that aren't mass assignable.
      *
